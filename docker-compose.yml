@@ -1,0 +1,44 @@
+version: "3.5"
+
+services:
+  web:
+    build:
+      context: ./web/
+    container_name: web    
+    ports:
+      - "8000:8000"
+    links:
+      - redis
+
+  redis:
+    build:
+      context: ./redis/
+    restart: always
+    ports:
+      - 6379:6379
+
+  example-prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    container_name: example-prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  example-grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    user: "472"
+    container_name: example-grafana
+    depends_on:
+      - example-prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - ./monitoring/datasource.yml:/etc/grafana/provisioning/datasource.yml
+    env_file:
+      - ./monitoring/config.monitoring
+
