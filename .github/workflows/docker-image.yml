@@ -1,0 +1,33 @@
+name: Build and push dockerhub
+
+on:
+  push:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - 
+        uses: actions/checkout@v2
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - 
+        name: Docker build redis
+        run: |      
+          docker build ./redis -t adimkoski/devops-redis
+      - 
+        name: Docker build app
+        run: |
+          docker build ./web -t adimkoski/devops-web
+      - name: Docker push redis
+        run: |
+          docker push adimkoski/devops-redis
+      - name: Docker push app
+        run: |
+          docker push adimkoski/devops-web
